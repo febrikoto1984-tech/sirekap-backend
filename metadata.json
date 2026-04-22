@@ -1,0 +1,6 @@
+{
+  "name": "SI-REKAP SMK",
+  "description": "Sistem Pengolah Nilai SMK terintegrasi Google Sheets dengan fitur ekspor PDF dan Excel sesuai format SAJ.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
