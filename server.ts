@@ -62,6 +62,7 @@ async function startServer() {
             }
           });
           res.setHeader('Content-Type', (response.headers['content-type'] as string) || 'image/png');
+          res.setHeader('Access-Control-Allow-Origin', '*');
           return response.data.pipe(res);
         } catch (e) {
           console.error("Custom logo proxy failed:", e);
@@ -81,6 +82,7 @@ async function startServer() {
       });
       res.setHeader('Content-Type', (response.headers['content-type'] as string) || 'image/png');
       res.setHeader('Cache-Control', 'public, max-age=604800');
+      res.setHeader('Access-Control-Allow-Origin', '*');
       response.data.pipe(res);
     } catch (error) {
       res.status(404).end();
@@ -116,11 +118,13 @@ async function startServer() {
       });
       res.setHeader('Content-Type', (response.headers['content-type'] as string) || 'image/png');
       res.setHeader('Cache-Control', 'public, max-age=604800');
+      res.setHeader('Access-Control-Allow-Origin', '*');
       response.data.pipe(res);
     } catch (error) {
        try {
          const fallbackRes = await axios.get('https://picsum.photos/seed/kemdikbud/200/200', { responseType: 'stream' });
          res.setHeader('Content-Type', 'image/jpeg');
+         res.setHeader('Access-Control-Allow-Origin', '*');
          fallbackRes.data.pipe(res);
        } catch (e) {
          res.status(404).end();

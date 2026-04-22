@@ -60,7 +60,8 @@ export default function ReportPreview({ masterData, currentUser }: ReportPreview
     const fetchFolders = async () => {
       setLoadingFolders(true);
       try {
-        const res = await fetch('/api/drive/folders');
+        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${apiUrl}/api/drive/folders`);
         if (res.ok) {
           const data = await res.json();
           setAvailableFolders(data);
@@ -283,7 +284,8 @@ export default function ReportPreview({ masterData, currentUser }: ReportPreview
         })
       };
 
-      const response = await fetch('/api/export-excel', {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/export-excel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -336,7 +338,8 @@ export default function ReportPreview({ masterData, currentUser }: ReportPreview
         })
       };
 
-      const response = await fetch('/api/save-to-drive', {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/save-to-drive`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
