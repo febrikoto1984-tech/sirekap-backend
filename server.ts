@@ -7,14 +7,20 @@ import ExcelJS from "exceljs";
 import axios from "axios";
 import { google } from "googleapis";
 import { Readable } from "stream";
+import cors from "cors";
 
 process.on('uncaughtException', (err) => { console.error('Uncaught Exception:', err); });
 process.on('unhandledRejection', (err) => { console.error('Unhandled Rejection:', err); });
 
-
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+
+  app.use(cors({
+    origin: "*", // Mengizinkan semua origin agar bisa diakses dari Niagahoster
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  }));
 
   app.use(express.json());
 
