@@ -625,7 +625,7 @@ function addSignatures(worksheet: ExcelJS.Worksheet, meta: any) {
 
   app.post("/api/save-to-drive", async (req, res) => {
     try {
-      const { data, meta, selectedFolderId } = req.body;
+      const { data, meta, selectedFolderId, force } = req.body;
       const drive = await getDrive();
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("SAJ Report");
@@ -730,7 +730,6 @@ function addSignatures(worksheet: ExcelJS.Worksheet, meta: any) {
       const finalFolderId = await findOrCreateFolder(drive, categoryFolderName, kelasFolderId);
 
       const fileName = `SAJ_${meta.kelas}_${meta.mapel}.xlsx`;
-      const { force } = req.body;
 
       // Check if file already exists
       const existingFileRes = await drive.files.list({
@@ -750,30 +749,40 @@ function addSignatures(worksheet: ExcelJS.Worksheet, meta: any) {
         });
       }
 
-      // If exists and force is true, delete the old one first to "overwrite"
-      if (existingFile && force) {
-        await drive.files.delete({
-          fileId: existingFile.id,
-          supportsAllDrives: true
-        });
-      }
+      // We respond success early so frontend doesn't timeout waiting for slow Drive Upload
+      res.json({ success: true, folderId: finalFolderId, fileName, force, message: "Proses unggah ke Drive sedang berjalan di latar belakang." });
 
-      // Upload to Drive
-      await drive.files.create({
-        requestBody: {
-          name: fileName,
-          parents: [finalFolderId]
-        },
-        media: {
-          mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          body: Readable.from(Buffer.from(buffer))
-        },
-        supportsAllDrives: true
-      });
+      // Run the actual upload process asynchronously in the background
+      (async () => {
+        try {
+          // If exists and force is true, delete the old one first to "overwrite"
+          if (existingFile && force) {
+            await drive.files.delete({
+              fileId: existingFile.id,
+              supportsAllDrives: true
+            });
+          }
 
-      res.json({ success: true, folderId: finalFolderId, fileName, force });
+          // Upload to Drive
+          await drive.files.create({
+            requestBody: {
+              name: fileName,
+              parents: [finalFolderId]
+            },
+            media: {
+              mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              body: Readable.from(Buffer.from(buffer))
+            },
+            supportsAllDrives: true
+          });
+          console.log(`[Background Task] Successfully uploaded ${fileName} to Drive.`);
+        } catch (bgError) {
+          console.error(`[Background Task] Failed to upload ${fileName} to Drive:`, bgError);
+        }
+      })();
+
     } catch (error: any) {
-      console.error("Drive upload error:", error);
+      console.error("Drive folder structure error:", error);
       let message = error.message;
       if (message.includes("storage quota")) {
         message = "Kuota Storage Service Account Habis. SOLUSI: Simpan folder '60. PSAJ 2026' di dalam 'DRIVE BERSAMA' (Shared Drive) sekolah, lalu bagikan akses Editor ke Service Account.";
