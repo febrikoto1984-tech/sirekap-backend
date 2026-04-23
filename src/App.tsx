@@ -150,7 +150,7 @@ export default function App() {
       : data.mapel.filter(m => {
           const teaching = user.mengajar.toLowerCase();
           const mapelNama = m.nama.toLowerCase();
-          return teaching.includes(mapelNama) || mapelNama.includes(teaching);
+          return teaching.includes(mapelNama) || mapelNama.includes(teaching) || m.isCustom;
         })
   } : null;
 
@@ -492,7 +492,7 @@ function PageContent({ error, view, filteredData, data, user, fetchData }: PageC
                   <Database className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 </div>
                 <p className="text-[10px] text-slate-500 mt-3 italic leading-relaxed">
-                  ID ini diambil dari URL spreadsheet. Perubahan konfigurasi harus melalui platform AI Studio Secrets Manager untuk keamanan data.
+                  ID ini diambil dari konfigurasi sistem. Perubahan konfigurasi harus melalui administrator untuk keamanan data.
                 </p>
               </div>
             </div>

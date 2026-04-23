@@ -343,7 +343,8 @@ async function startServer() {
               id: mapelName,
               nama: mapelName,
               kategori: 'Umum', // Default untuk mapel sisipan
-              hasPraktik: true
+              hasPraktik: true,
+              isCustom: true
             });
           }
         });

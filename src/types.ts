@@ -22,6 +22,7 @@ export interface Subject {
   nama: string;
   kategori: 'Umum' | 'Kejuruan';
   hasPraktik: boolean;
+  isCustom?: boolean;
 }
 
 export interface Grade {
