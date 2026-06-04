@@ -59,4 +59,5 @@ export interface MasterData {
   nilai: Grade[];
   guru: Teacher[];
   settings?: AppSettings;
+  spreadsheetId?: string;
 }
