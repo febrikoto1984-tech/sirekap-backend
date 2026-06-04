@@ -131,6 +131,35 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
     }
   });
 
+  function formatPrivateKey(key: string): string {
+    if (!key) return key;
+    try {
+      if (key.trim().startsWith('{')) {
+        const json = JSON.parse(key);
+        key = json.private_key || key;
+      }
+    } catch(e) {}
+    
+    // Replace literal \n with actual newlines
+    key = key.replace(/\\n/g, '\n');
+    
+    // Remove surrounding quotes
+    key = key.trim().replace(/^['"]|['"]$/g, '');
+  
+    // If it's completely flat (no newlines) or just spaces
+    const header = "-----BEGIN PRIVATE KEY-----";
+    const footer = "-----END PRIVATE KEY-----";
+    
+    if (key.includes(header) && key.includes(footer) && !key.includes('\n')) {
+      const bodyMatch = key.substring(key.indexOf(header) + header.length, key.indexOf(footer));
+      const rawBase64 = bodyMatch.replace(/\s+/g, '');
+      const lines = rawBase64.match(/.{1,64}/g) || [];
+      key = `${header}\n${lines.join('\n')}\n${footer}\n`;
+    }
+    
+    return key;
+  }
+
   // Google Sheets Helper
   const getSheet = async (sheetId?: string) => {
     // Priority: 1. Argument, 2. Env Var, 3. User-provided fallback
@@ -140,31 +169,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
     const serviceEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || "si-rekap-smk@sirekap2026.iam.gserviceaccount.com";
     
     // Advanced private key sanitization
-    let privateKey = process.env.GOOGLE_PRIVATE_KEY || "";
-    
-    if (privateKey) {
-      try {
-        // Case: User accidentally pasted the entire JSON object
-        if (privateKey.trim().startsWith('{')) {
-          const json = JSON.parse(privateKey);
-          privateKey = json.private_key || privateKey;
-        }
-      } catch (e) {
-        // Not JSON, continue with string cleaning
-      }
-
-      // Restore newlines if they are escaped as literal "\n"
-      privateKey = privateKey.replace(/\\n/g, "\n");
-      
-      // Remove any surrounding quotes
-      privateKey = privateKey.trim().replace(/^['"]|['"]$/g, "");
-
-      // Ensure the key has the correct PEM structure
-      if (!privateKey.includes("-----BEGIN PRIVATE KEY-----")) {
-        // If the header is missing, something is wrong, but we can try to wrap it if it looks like base64
-        // However, it's safer to just warn.
-      }
-    }
+    let privateKey = formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY || "");
 
     if (!serviceEmail || !privateKey) {
       console.error("Google Credentials Missing: Email or Private Key is empty");
@@ -192,14 +197,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
   const getDrive = async () => {
     const serviceEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || "si-rekap-smk@sirekap2026.iam.gserviceaccount.com";
-    let privateKey = process.env.GOOGLE_PRIVATE_KEY || "";
-    
-    if (privateKey) {
-      if (privateKey.trim().startsWith('{')) {
-        try { privateKey = JSON.parse(privateKey).private_key || privateKey; } catch(e) {}
-      }
-      privateKey = privateKey.replace(/\\n/g, "\n").trim().replace(/^['"]|['"]$/g, "");
-    }
+    let privateKey = formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY || "");
 
     const auth = new JWT({
       email: serviceEmail,
