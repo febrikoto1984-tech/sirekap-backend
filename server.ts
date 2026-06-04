@@ -793,7 +793,8 @@ function addSignatures(worksheet: ExcelJS.Worksheet, meta: any) {
 
   if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
     (async () => {
-      const { createServer: createViteServer } = await import("vite");
+      const vitePkg = "vite";
+      const { createServer: createViteServer } = await import(vitePkg);
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
